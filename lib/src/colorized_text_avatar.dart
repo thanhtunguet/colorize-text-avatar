@@ -2,10 +2,10 @@ import 'package:colorize_text_avatar/colorize_text_avatar.dart';
 import 'package:flutter/material.dart';
 
 class TextAvatar extends StatelessWidget {
-  Shape? shape;
-  Color? backgroundColor;
-  Color? textColor;
-  double? size;
+  final Shape? shape;
+  final Color? backgroundColor;
+  final Color? textColor;
+  final double? size;
   final String? text;
   final double? fontSize;
   final int? numberLetters;
@@ -13,39 +13,41 @@ class TextAvatar extends StatelessWidget {
   final String? fontFamily;
   final bool? upperCase;
 
-  TextAvatar(
-      {Key? key,
-      @required this.text,
-      this.textColor,
-      this.backgroundColor,
-      this.shape,
-      this.numberLetters,
-      this.size,
-      this.fontWeight = FontWeight.bold,
-      this.fontFamily,
-      this.fontSize = 16,
-      this.upperCase = false}) {
-    //assert(numberLetters! > 0);
-  }
+  const TextAvatar({
+    Key? key,
+    @required this.text,
+    this.textColor,
+    this.backgroundColor,
+    this.shape,
+    this.numberLetters,
+    this.size,
+    this.fontWeight = FontWeight.bold,
+    this.fontFamily,
+    this.fontSize = 16,
+    this.upperCase = false,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    shape = (shape == null) ? Shape.Rectangle : shape;
-    size = (size == null || size! < 32.0) ? 48.0 : size;
-    backgroundColor =
-        backgroundColor == null ? _colorBackgroundConfig() : backgroundColor;
-    textColor = _colorTextConfig();
-    return _textDisplay();
+    final Shape resolvedShape = shape ?? Shape.Rectangle;
+    final double resolvedSize = (size == null || size! < 32.0) ? 48.0 : size!;
+    final Color resolvedBackgroundColor =
+        backgroundColor ?? _colorBackgroundConfig();
+    final Color resolvedTextColor = _colorTextConfig();
+    return _textDisplay(
+      resolvedShape: resolvedShape,
+      resolvedSize: resolvedSize,
+      resolvedBackgroundColor: resolvedBackgroundColor,
+      resolvedTextColor: resolvedTextColor,
+    );
   }
 
   Color _colorBackgroundConfig() {
-    if (RegExp(r'[A-Z]|').hasMatch(
-      _textConfiguration(),
-    )) {
-      backgroundColor =
-          colorData[_textConfiguration()[0].toLowerCase().toString()];
+    if (RegExp(r'[A-Z]|').hasMatch(_textConfiguration())) {
+      return colorData[_textConfiguration()[0].toLowerCase().toString()] ??
+          Colors.grey;
     }
-    return backgroundColor!;
+    return Colors.grey;
   }
 
   Color _colorTextConfig() {
@@ -73,11 +75,11 @@ class TextAvatar extends StatelessWidget {
     return '${newText[0]}';
   }
 
-  Widget _buildText() {
+  Widget _buildText(Color resolvedTextColor) {
     return Text(
       _textConfiguration(),
       style: TextStyle(
-        color: textColor,
+        color: resolvedTextColor,
         fontSize: fontSize,
         fontWeight: fontWeight,
         fontFamily: fontFamily,
@@ -85,15 +87,15 @@ class TextAvatar extends StatelessWidget {
     );
   }
 
-  _buildTextType() {
-    switch (shape) {
+  _buildTextType(Shape resolvedShape, double resolvedSize) {
+    switch (resolvedShape) {
       case Shape.Rectangle:
         return RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(6.0),
         );
       case Shape.Circular:
         return RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(size! / 2),
+          borderRadius: BorderRadius.circular(resolvedSize / 2),
         );
       case Shape.None:
         return RoundedRectangleBorder(
@@ -102,22 +104,27 @@ class TextAvatar extends StatelessWidget {
       default:
         {
           return RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(size! / 2),
+            borderRadius: BorderRadius.circular(resolvedSize / 2),
           );
         }
     }
   }
 
-  Widget _textDisplay() {
+  Widget _textDisplay({
+    required Shape resolvedShape,
+    required double resolvedSize,
+    required Color resolvedBackgroundColor,
+    required Color resolvedTextColor,
+  }) {
     return Container(
       child: Material(
-        shape: _buildTextType(),
-        color: backgroundColor,
+        shape: _buildTextType(resolvedShape, resolvedSize),
+        color: resolvedBackgroundColor,
         child: Container(
-          height: size,
-          width: size,
+          height: resolvedSize,
+          width: resolvedSize,
           child: Center(
-            child: _buildText(),
+            child: _buildText(resolvedTextColor),
           ),
         ),
       ),
